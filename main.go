@@ -32,23 +32,19 @@ func main() {
 	}
 	defer window.Destroy()
 
-	// create CHIP8 machine
-	chipConfig := chip8.GetDefaultConfig()
-	chip := chip8.NewCHIP8(chipConfig)
+	// set up CHIP8 machine
+	chipCfg := chip8.GetDefaultConfig()
+	// chipCfg.ClockFreq = 2000.0
+	chip, done := chip8.NewCHIP8(chipCfg)
 
-	// // draw a red square
-	// surface, err := window.GetSurface()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// surface.FillRect(nil, 0)
+	// prepare display refresh timer
+	displayPeriod := time.Microsecond * time.Duration(1000000.0/chipCfg.ScreenRefreshFreq)
+	fmt.Printf("displayPeriod: %v\n", displayPeriod)
+	displayTicker := time.NewTicker(displayPeriod)
+	defer displayTicker.Stop()
 
-	// rect := sdl.Rect{X: 300, Y: 200, W: 200, H: 200}
-	// surface.FillRect(&rect, 0xff00c0d3)
-	// window.UpdateSurface()
-
-	displayTicker := time.NewTicker(time.Millisecond * time.Duration(1000.0/(chipConfig.ClockFreq)))
-	// displayTicker := time.NewTicker(time.Second)
+	// start CHIP8 machine
+	go chip.Run()
 
 	// main loop
 	running := true
@@ -57,23 +53,20 @@ func main() {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
-				println("Quit")
+				fmt.Println("Quit")
 				running = false
+				done <- true
 				break
-			default:
-				fmt.Printf("event %s\n", event)
+				// default:
+				// 	fmt.Printf("event %s\n", event)
 			}
 		}
 
-		// randomize chip8 display
-		chip.RandomizeDisplay()
-
-		// draw chip8 display
+		// draw CHIP8 display
 		sdlio.DrawCHIP8Display(window, chip)
 		window.UpdateSurface()
 
-		// sleep until
-		// time.Sleep(time.Millisecond * 16)
+		// wait until next draw
 		<-displayTicker.C
 	}
 }
