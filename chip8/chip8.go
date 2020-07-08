@@ -14,7 +14,7 @@ type CHIP8 struct {
 	stack     []uint8     // stack memory
 	registers []uint16    // register memory
 	done      <-chan bool // signals CHIP8 to stop execution
-	cycle     uint        // number of cycles executed
+	Cycle     uint        // number of cycles executed
 }
 
 // NewCHIP8 creates new CHIP8 machine given configuration
@@ -27,7 +27,7 @@ func NewCHIP8(cfg *Config) (*CHIP8, chan<- bool) {
 		stack:     make([]uint8, cfg.SizeStack),
 		registers: make([]uint16, cfg.SizeStack),
 		done:      done,
-		cycle:     0,
+		Cycle:     0,
 	}
 
 	return &chip, done
@@ -43,7 +43,7 @@ func (c *CHIP8) RandomizeDisplay() {
 // DrawBinaryCount draws the current cycle number to screen in binary
 func (c *CHIP8) DrawBinaryCount() {
 	var byteToDraw uint8
-	count := c.cycle
+	count := c.Cycle
 
 	for byteIdx := range c.Display {
 
@@ -71,7 +71,7 @@ func (c *CHIP8) DrawBinaryCount() {
 func (c *CHIP8) Run() {
 
 	clockPeriod := time.Nanosecond * time.Duration(1000000000.0/c.Cfg.ClockFreq)
-	fmt.Printf("clockPeriod: %v\n", clockPeriod)
+	fmt.Printf("CHIP8 clockPeriod: %v\n", clockPeriod)
 	clockTicker := time.NewTicker(clockPeriod)
 	defer clockTicker.Stop()
 
@@ -81,13 +81,14 @@ func (c *CHIP8) Run() {
 	for running {
 		select {
 		case <-c.done:
-			fmt.Println("Done executing!")
 			running = false
 			break
 		case <-clockTicker.C:
 			c.DrawBinaryCount()
-			c.cycle++
+			c.Cycle++
 			break
 		}
 	}
+
+	fmt.Println("CHIP8 halted")
 }

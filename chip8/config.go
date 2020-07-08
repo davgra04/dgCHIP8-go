@@ -8,7 +8,6 @@ type Config struct {
 	SizeDisplay              int     // bytes
 	NumRegisters             int     // num 16-bit registers
 	ClockFreq                float32 // Hz
-	ScreenRefreshFreq        int     // Hz
 	TimerDecrementFreq       int     // Hz
 }
 
@@ -22,7 +21,6 @@ func GetDefaultConfig() *Config {
 		SizeDisplay:        256,
 		NumRegisters:       16,
 		ClockFreq:          500,
-		ScreenRefreshFreq:  60,
 		TimerDecrementFreq: 60,
 	}
 }
