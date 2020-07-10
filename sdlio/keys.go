@@ -1,5 +1,12 @@
 package sdlio
 
+import (
+	"strconv"
+	"strings"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
+
 // chip8KeyToQWERTY maps CHIP8 keys to QWERTY keyboard keys
 var chip8KeyToQWERTY map[string]string = map[string]string{
 	"1": "1",
@@ -20,4 +27,42 @@ var chip8KeyToQWERTY map[string]string = map[string]string{
 	"F": "V",
 }
 
-// keys := "123C456D789EA0BF"
+var chip8Keys string = "123C456D789EA0BF"
+
+// QWERTYToChip8Key maps QWERTY keyboard keys to CHIP8 keys
+var QWERTYToChip8Key map[string]string = map[string]string{
+	"1": "1",
+	"2": "2",
+	"3": "3",
+	"4": "C",
+	"Q": "4",
+	"W": "5",
+	"E": "6",
+	"R": "D",
+	"A": "7",
+	"S": "8",
+	"D": "9",
+	"F": "E",
+	"Z": "A",
+	"X": "0",
+	"C": "B",
+	"V": "F",
+}
+
+var qwertyKeys string = "1234QWERASDFZXCV"
+
+// HandleKey sets the CHIP8 input state according to the event
+func HandleKey(ctx *SDLAppContext, t *sdl.KeyboardEvent) {
+	// fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
+	// 	t.Timestamp, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat)
+
+	if chipKey, ok := QWERTYToChip8Key[strings.ToUpper(string(t.Keysym.Sym))]; ok {
+		keyIdx, _ := strconv.ParseInt(chipKey, 16, 64)
+		if t.Type == sdl.KEYDOWN {
+			ctx.Chip8.Keys[keyIdx] = true
+		} else {
+			ctx.Chip8.Keys[keyIdx] = false
+		}
+	}
+
+}

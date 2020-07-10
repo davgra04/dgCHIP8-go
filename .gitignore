@@ -1,3 +1,8 @@
+scratch/
+games/
+test_programs/
+.DS_Store
+dgCHIP8-go
 
 # Created by https://www.toptal.com/developers/gitignore/api/go
 # Edit at https://www.toptal.com/developers/gitignore?templates=go

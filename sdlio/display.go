@@ -2,7 +2,7 @@ package sdlio
 
 import (
 	"fmt"
-	"math/rand"
+	"strconv"
 
 	"github.com/davgra04/dgCHIP8-go/chip8"
 	"github.com/veandco/go-sdl2/sdl"
@@ -75,6 +75,54 @@ func DrawWindow(ctx *SDLAppContext) {
 	ctx.Window.UpdateSurface()
 }
 
+func drawKeypad(ctx *SDLAppContext, xOffset, yOffset int32, qwerty bool) {
+
+	size := int32(30)
+	gap := int32(4)
+
+	label := "KEYPAD:"
+	if qwerty {
+		label = "QWERTY:"
+	}
+	RenderText(ctx, label, xOffset, yOffset, ctx.WinCfg.TextColor)
+
+	for ix := int32(0); ix < 4; ix++ {
+		for iy := int32(0); iy < 4; iy++ {
+			x := xOffset + 10 + ix*(size+gap)
+			y := yOffset + 24 + iy*(size+gap)
+			key := string(chip8Keys[ix+4*iy])
+			keyIdx, _ := strconv.ParseInt(key, 16, 64)
+			keyLabel := key
+			if qwerty {
+				keyLabel = chip8KeyToQWERTY[key]
+			}
+			rect := sdl.Rect{
+				X: x,
+				Y: y,
+				W: size,
+				H: size,
+			}
+
+			if ctx.Chip8.Keys[keyIdx] {
+				ctx.Renderer.SetDrawColor(0x00, 0xc0, 0xd3, 0xff)
+				ctx.Renderer.FillRect(&rect)
+			} else {
+				ctx.Renderer.SetDrawColor(0xff, 0xff, 0xff, 0xff)
+				ctx.Renderer.DrawRect(&rect)
+			}
+			RenderText(ctx, keyLabel, x+10, y+4, ctx.WinCfg.TextColor)
+		}
+	}
+}
+
+func drawCHIP8Keypad(ctx *SDLAppContext, xOffset, yOffset int32) {
+	drawKeypad(ctx, xOffset, yOffset, false)
+}
+
+func drawQWERTYKeypad(ctx *SDLAppContext, xOffset, yOffset int32) {
+	drawKeypad(ctx, xOffset, yOffset, true)
+}
+
 // DrawCHIP8MachineState draws the state of the registers/stack/memory.
 func DrawCHIP8MachineState(ctx *SDLAppContext) {
 
@@ -105,64 +153,28 @@ func DrawCHIP8MachineState(ctx *SDLAppContext) {
 	////////////////////////////////////////
 	xOffset := int32(8)
 	yOffset := int32(330)
-
-	keys := "123C456D789EA0BF"
-
-	RenderText(ctx, "KEYPAD:", xOffset, yOffset, ctx.WinCfg.TextColor)
-
-	size := int32(30)
-	gap := int32(4)
-	ctx.Renderer.SetDrawColor(0xff, 0xff, 0xff, 0xff)
-
-	for ix := int32(0); ix < 4; ix++ {
-		for iy := int32(0); iy < 4; iy++ {
-			x := xOffset + 10 + ix*(size+gap)
-			y := yOffset + 24 + iy*(size+gap)
-			ctx.Renderer.DrawRect(&sdl.Rect{
-				X: x,
-				Y: y,
-				W: size,
-				H: size,
-			})
-			RenderText(ctx, string(keys[ix+4*iy]), x+10, y+4, ctx.WinCfg.TextColor)
-		}
-	}
-
-	RenderText(ctx, "QWERTY:", xOffset, yOffset+170, ctx.WinCfg.TextColor)
-
-	for ix := int32(0); ix < 4; ix++ {
-		for iy := int32(0); iy < 4; iy++ {
-			x := xOffset + 10 + ix*(size+gap)
-			y := yOffset + 170 + 24 + iy*(size+gap)
-			ctx.Renderer.DrawRect(&sdl.Rect{
-				X: x,
-				Y: y,
-				W: size,
-				H: size,
-			})
-			RenderText(ctx, chip8KeyToQWERTY[string(keys[ix+4*iy])], x+10, y+4, ctx.WinCfg.TextColor)
-		}
-	}
+	drawCHIP8Keypad(ctx, xOffset, yOffset)
+	drawQWERTYKeypad(ctx, xOffset, yOffset+170)
 
 	// draw registers
 	////////////////////////////////////////
 	xOffset = 160
 	RenderText(ctx, "REGISTERS:", xOffset, yOffset, ctx.WinCfg.TextColor)
 	for i := 0; i < 16; i++ {
-		text := fmt.Sprintf("REG_%x 0x%02x", i, rand.Intn(256))
+		text := fmt.Sprintf("REG_%x 0x%02x", i, ctx.Chip8.Registers[i])
 		RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.TextColor)
 	}
-	RenderText(ctx, fmt.Sprintf("REG_I 0x%04x", rand.Intn(65536)), xOffset+10, yOffset+324, ctx.WinCfg.TextColor)
-	RenderText(ctx, fmt.Sprintf("DELAY 0x%02x", rand.Intn(256)), xOffset+10, yOffset+342, ctx.WinCfg.TextColor)
-	RenderText(ctx, fmt.Sprintf("SOUND 0x%02x", rand.Intn(256)), xOffset+10, yOffset+360, ctx.WinCfg.TextColor)
+	RenderText(ctx, fmt.Sprintf("REG_I 0x%04x", ctx.Chip8.RegI), xOffset+10, yOffset+324, ctx.WinCfg.TextColor)
+	RenderText(ctx, fmt.Sprintf("DELAY 0x%02x", ctx.Chip8.RegDelay), xOffset+10, yOffset+342, ctx.WinCfg.TextColor)
+	RenderText(ctx, fmt.Sprintf("SOUND 0x%02x", ctx.Chip8.RegSound), xOffset+10, yOffset+360, ctx.WinCfg.TextColor)
 
 	// draw stack
 	////////////////////////////////////////
 	xOffset = 294
 	RenderText(ctx, "STACK:", xOffset, yOffset, ctx.WinCfg.TextColor)
 	for i := 0; i < 16; i++ {
-		text := fmt.Sprintf("0x%x 0x%04x", i, rand.Intn(65536))
-		if i == 7 {
+		text := fmt.Sprintf("0x%x 0x%04x", i, ctx.Chip8.Stack[i])
+		if i == int(ctx.Chip8.StackPtr) {
 			text += " ←HEAD"
 			RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.MainColor)
 		} else {
@@ -173,14 +185,20 @@ func DrawCHIP8MachineState(ctx *SDLAppContext) {
 	// draw program
 	////////////////////////////////////////
 	xOffset = 468
+	numWords := 20
 	RenderText(ctx, "PROGRAM:", xOffset, yOffset, ctx.WinCfg.TextColor)
-	for i := 0; i < 20; i++ {
-		text := fmt.Sprintf("0x%04x 0x%04x", i+0x0543, rand.Intn(65536))
-		if i == 20/2 {
-			text += " ←PC"
-			RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.MainColor)
-		} else {
-			RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.TextColor)
+	for i := 0; i < numWords; i++ {
+		curAddr := int(ctx.Chip8.PC) + 2*(i-numWords/2)
+
+		if curAddr >= 0 {
+
+			text := fmt.Sprintf("0x%04x 0x%04x", curAddr, ctx.Chip8.ReadWord(uint16(curAddr)))
+			if i == numWords/2 {
+				text += " ←PC"
+				RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.MainColor)
+			} else {
+				RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.TextColor)
+			}
 		}
 	}
 

@@ -1,7 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -18,9 +22,67 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func main() {
+func readProgram(path string) []byte {
+	// file, err := os.Open(path)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer file.Close()
 
-	// Initialize
+	program, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("program: %v [%T]\n", program, program)
+	return program
+}
+
+func main() {
+	// Process command line arguments
+	////////////////////////////////////////
+
+	// usage: bin2go.py [-h] [-w WIDTH] infile
+
+	// positional arguments:
+	//   infile                file to convert into a Go bytes array
+
+	// optional arguments:
+	//   -h, --help            show this help message and exit
+	//   -w WIDTH, --width WIDTH
+	// 						sets maximum width in characters of output Go bytes
+	// 						array
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: %s [-h] [-start_paused] program_path\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "positional arguments:\n")
+		fmt.Fprintf(os.Stderr, "  program_path\n")
+		fmt.Fprintf(os.Stderr, "        path of the program to load and execute:\n")
+		fmt.Fprintf(os.Stderr, "optional arguments:\n")
+		flag.PrintDefaults()
+	}
+
+	startPaused := flag.Bool("start_paused", false, "if set, CHIP8 machine will start paused")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
+		panic(fmt.Errorf("Must provide program_path to load into CHIP8"))
+	}
+
+	fmt.Printf("startPaused: %v [%T]\n", *startPaused, *startPaused)
+	fmt.Printf("flag.Arg(0): %v [%T]\n", flag.Arg(0), flag.Arg(0))
+
+	// Initialize CHIP8 machine
+	////////////////////////////////////////
+
+	chipCfg := chip8.GetDefaultConfig()
+	// chipCfg.ClockFreq = 2000.0
+	chip, done := chip8.NewCHIP8(chipCfg)
+
+	// read program and load into CHIP8 memory
+	chip.LoadProgram(readProgram(flag.Arg(0)))
+
+	// Initialize SDL and CHIP8 machine
 	////////////////////////////////////////
 
 	// get default SDL window config
@@ -37,13 +99,6 @@ func main() {
 		panic(err)
 	}
 	defer ttf.Quit()
-
-	// fontPath := "SourceCodePro-Regular.ttf"
-	// fontPath := "SourceCodePro-Medium.ttf"
-	// font, err := ttf.OpenFont(fontPath, 16)
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	// load font
 	font, err := sdlio.LoadFont(16)
@@ -66,11 +121,6 @@ func main() {
 		panic(err)
 	}
 	defer renderer.Destroy()
-
-	// set up CHIP8 machine
-	chipCfg := chip8.GetDefaultConfig()
-	// chipCfg.ClockFreq = 2000.0
-	chip, done := chip8.NewCHIP8(chipCfg)
 
 	// wrap everything in SDLAppContext
 	ctx := sdlio.SDLAppContext{
@@ -98,7 +148,10 @@ func main() {
 	for running {
 		// handle SDL events
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
+			switch t := event.(type) {
+			case *sdl.KeyboardEvent:
+				sdlio.HandleKey(&ctx, t)
+				break
 			case *sdl.QuitEvent:
 				fmt.Println("Quit")
 				running = false
