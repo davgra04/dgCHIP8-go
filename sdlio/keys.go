@@ -56,12 +56,25 @@ func HandleKey(ctx *SDLAppContext, t *sdl.KeyboardEvent) {
 	// fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
 	// 	t.Timestamp, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat)
 
+	// handle CHIP8 keypresses
 	if chipKey, ok := QWERTYToChip8Key[strings.ToUpper(string(t.Keysym.Sym))]; ok {
 		keyIdx, _ := strconv.ParseInt(chipKey, 16, 64)
 		if t.Type == sdl.KEYDOWN {
 			ctx.Chip8.Keys[keyIdx] = true
 		} else {
 			ctx.Chip8.Keys[keyIdx] = false
+		}
+	} else { // handle pause/step emulation
+		if t.Type == sdl.KEYDOWN {
+			if t.Keysym.Sym == sdl.K_k && t.Repeat == 0 {
+				// pause emulation
+				ctx.Chip8.Paused = !ctx.Chip8.Paused
+			} else if t.Keysym.Sym == sdl.K_l {
+				// step emulation
+				if ctx.Chip8.Paused {
+					ctx.Chip8.StepEmulation()
+				}
+			}
 		}
 	}
 

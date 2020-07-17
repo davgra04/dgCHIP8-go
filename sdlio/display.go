@@ -2,6 +2,7 @@ package sdlio
 
 import (
 	"fmt"
+	"math/bits"
 	"strconv"
 
 	"github.com/davgra04/dgCHIP8-go/chip8"
@@ -156,12 +157,18 @@ func DrawCHIP8MachineState(ctx *SDLAppContext) {
 	drawCHIP8Keypad(ctx, xOffset, yOffset)
 	drawQWERTYKeypad(ctx, xOffset, yOffset+170)
 
+	// draw cycle count and frequency
+	////////////////////////////////////////
+	// RenderText(ctx, keyLabel, x+10, y+4, ctx.WinCfg.TextColor)
+	RenderText(ctx, fmt.Sprintf("CYCLE %d", ctx.Chip8.Cycle), xOffset, yOffset+342, ctx.WinCfg.TextColor)
+	RenderText(ctx, fmt.Sprintf("FREQ %.1f HZ", ctx.Chip8.Cfg.ClockFreq), xOffset, yOffset+360, ctx.WinCfg.TextColor)
+
 	// draw registers
 	////////////////////////////////////////
 	xOffset = 160
 	RenderText(ctx, "REGISTERS:", xOffset, yOffset, ctx.WinCfg.TextColor)
 	for i := 0; i < 16; i++ {
-		text := fmt.Sprintf("REG_%x 0x%02x", i, ctx.Chip8.Registers[i])
+		text := fmt.Sprintf("REG_%x 0x%02x", i, ctx.Chip8.Reg[i])
 		RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.TextColor)
 	}
 	RenderText(ctx, fmt.Sprintf("REG_I 0x%04x", ctx.Chip8.RegI), xOffset+10, yOffset+324, ctx.WinCfg.TextColor)
@@ -192,7 +199,7 @@ func DrawCHIP8MachineState(ctx *SDLAppContext) {
 
 		if curAddr >= 0 {
 
-			text := fmt.Sprintf("0x%04x 0x%04x", curAddr, ctx.Chip8.ReadWord(uint16(curAddr)))
+			text := fmt.Sprintf("0x%04x 0x%04x", curAddr, ctx.Chip8.ReadShort(uint16(curAddr)))
 			if i == numWords/2 {
 				text += " ←PC"
 				RenderText(ctx, text, xOffset+10, int32(yOffset+18*int32(i+1)), ctx.WinCfg.MainColor)
@@ -243,6 +250,8 @@ func DrawCHIP8Display(ctx *SDLAppContext) {
 
 	for byteIdx, byte := range ctx.Chip8.Display {
 		// fmt.Printf("    byte %03d:  %v\n", byteIdx, byte)
+		byte = bits.Reverse8(byte)
+
 		for i := 0; i < 8; i++ {
 			x := int32((byteIdx*8 + i) % ctx.Chip8.Cfg.ResolutionX)
 			y := int32((byteIdx*8 + i) / ctx.Chip8.Cfg.ResolutionX)

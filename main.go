@@ -42,17 +42,6 @@ func main() {
 	// Process command line arguments
 	////////////////////////////////////////
 
-	// usage: bin2go.py [-h] [-w WIDTH] infile
-
-	// positional arguments:
-	//   infile                file to convert into a Go bytes array
-
-	// optional arguments:
-	//   -h, --help            show this help message and exit
-	//   -w WIDTH, --width WIDTH
-	// 						sets maximum width in characters of output Go bytes
-	// 						array
-
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "usage: %s [-h] [-start_paused] program_path\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "positional arguments:\n")
@@ -77,7 +66,9 @@ func main() {
 
 	chipCfg := chip8.GetDefaultConfig()
 	// chipCfg.ClockFreq = 2000.0
+	// chipCfg.ClockFreq = 10.0
 	chip, done := chip8.NewCHIP8(chipCfg)
+	chip.Paused = *startPaused
 
 	// read program and load into CHIP8 memory
 	chip.LoadProgram(readProgram(flag.Arg(0)))

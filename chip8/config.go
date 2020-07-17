@@ -3,10 +3,10 @@ package chip8
 // Config represents the configuration for the CHIP8 machine
 type Config struct {
 	ResolutionX, ResolutionY int     // num pixels
-	SizeMemory               int     // bytes
-	SizeStack                int     // bytes
-	SizeDisplay              int     // bytes
-	NumRegisters             int     // num 16-bit registers
+	SizeMemory               uint16  // bytes
+	SizeStack                uint8   // bytes
+	SizeDisplay              uint16  // bytes
+	NumRegisters             uint16  // num 16-bit registers
 	ClockFreq                float32 // Hz
 	TimerDecrementFreq       int     // Hz
 }
