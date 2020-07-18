@@ -27,85 +27,110 @@ func (chip *CHIP8) decodeAndExecuteInstruction(instruction uint16) {
 	case 0x0:
 		switch instruction {
 		case 0x00e0:
+			// fmt.Printf("chip.instructionClearScreen()\n")
 			chip.instructionClearScreen()
 			break
 		case 0x00ee:
+			// fmt.Printf("chip.instructionReturnSubroutine()\n")
 			chip.instructionReturnSubroutine()
 		}
 		break
 	case 0x1:
+		// fmt.Printf("chip.instructionJump(0x%04x)\n", instruction)
 		chip.instructionJump(instruction)
 		break
 	case 0x2:
+		// fmt.Printf("chip.instructionCallSubroutine(0x%04x)\n", instruction)
 		chip.instructionCallSubroutine(instruction)
 		break
 	case 0x3:
+		// fmt.Printf("chip.instructionSkipEqualByte(0x%04x)\n", instruction)
 		chip.instructionSkipEqualByte(instruction)
 		break
 	case 0x4:
+		// fmt.Printf("chip.instructionSkipNotEqualByte(0x%04x)\n", instruction)
 		chip.instructionSkipNotEqualByte(instruction)
 		break
 	case 0x5:
+		// fmt.Printf("chip.instructionSkipEqualReg(0x%04x)\n", instruction)
 		chip.instructionSkipEqualReg(instruction)
 		break
 	case 0x6:
+		// fmt.Printf("chip.instructionLoadByte(0x%04x)\n", instruction)
 		chip.instructionLoadByte(instruction)
 		break
 	case 0x7:
+		// fmt.Printf("chip.instructionAddByte(0x%04x)\n", instruction)
 		chip.instructionAddByte(instruction)
 		break
 	case 0x8:
 		switch InstNibble[3] {
 		case 0x0:
+			// fmt.Printf("chip.instructionLoadReg(0x%04x)\n", instruction)
 			chip.instructionLoadReg(instruction)
 			break
 		case 0x1:
+			// fmt.Printf("chip.instructionOr(0x%04x)\n", instruction)
 			chip.instructionOr(instruction)
 			break
 		case 0x2:
+			// fmt.Printf("chip.instructionAnd(0x%04x)\n", instruction)
 			chip.instructionAnd(instruction)
 			break
 		case 0x3:
+			// fmt.Printf("chip.instructionXor(0x%04x)\n", instruction)
 			chip.instructionXor(instruction)
 			break
 		case 0x4:
+			// fmt.Printf("chip.instructionAddReg(0x%04x)\n", instruction)
 			chip.instructionAddReg(instruction)
 			break
 		case 0x5:
+			// fmt.Printf("chip.instructionSubReg(0x%04x)\n", instruction)
 			chip.instructionSubReg(instruction)
 			break
 		case 0x6:
+			// fmt.Printf("chip.instructionShiftRight(0x%04x)\n", instruction)
 			chip.instructionShiftRight(instruction)
 			break
 		case 0x7:
+			// fmt.Printf("chip.instructionSubNReg(0x%04x)\n", instruction)
 			chip.instructionSubNReg(instruction)
 			break
 		case 0xe:
+			// fmt.Printf("chip.instructionShiftLeft(0x%04x)\n", instruction)
 			chip.instructionShiftLeft(instruction)
 			break
 		}
 		break
 	case 0x9:
+		// fmt.Printf("chip.instructionSkipNotEqualReg(0x%04x)\n", instruction)
 		chip.instructionSkipNotEqualReg(instruction)
 		break
 	case 0xa:
+		// fmt.Printf("chip.instructionLoadRegI(0x%04x)\n", instruction)
 		chip.instructionLoadRegI(instruction)
 		break
 	case 0xb:
+		// fmt.Printf("chip.instructionJumpReg(0x%04x)\n", instruction)
 		chip.instructionJumpReg(instruction)
 		break
 	case 0xc:
+		// fmt.Printf("chip.instructionRand(0x%04x)\n", instruction)
 		chip.instructionRand(instruction)
 		break
 	case 0xd:
+		// fmt.Printf("chip.instructionDrawSprite(0x%04x)\n", instruction)
 		chip.instructionDrawSprite(instruction)
 		break
 	case 0xe:
 		switch InstByte[1] {
 		case 0x9e:
+			// fmt.Printf("chip.instructionSkipKey(0x%04x)\n", instruction)
 			chip.instructionSkipKey(instruction)
 			break
 		case 0xa1:
+			// fmt.Printf("chip.instructionSkipNotKey(0x%04x)\n", instruction)
 			chip.instructionSkipNotKey(instruction)
 			break
 		default:
@@ -115,30 +140,39 @@ func (chip *CHIP8) decodeAndExecuteInstruction(instruction uint16) {
 	case 0xf:
 		switch InstByte[1] {
 		case 0x07:
+			// fmt.Printf("chip.instructionReadDelayTimer(0x%04x)\n", instruction)
 			chip.instructionReadDelayTimer(instruction)
 			break
 		case 0x0A:
+			// fmt.Printf("chip.instructionWaitForKey(0x%04x)\n", instruction)
 			chip.instructionWaitForKey(instruction)
 			break
 		case 0x15:
+			// fmt.Printf("chip.instructionSetDelayTimer(0x%04x)\n", instruction)
 			chip.instructionSetDelayTimer(instruction)
 			break
 		case 0x18:
+			// fmt.Printf("chip.instructionSetSoundTimer(0x%04x)\n", instruction)
 			chip.instructionSetSoundTimer(instruction)
 			break
 		case 0x1e:
+			// fmt.Printf("chip.instructionAddRegI(0x%04x)\n", instruction)
 			chip.instructionAddRegI(instruction)
 			break
 		case 0x29:
+			// fmt.Printf("chip.instructionLoadSprite(0x%04x)\n", instruction)
 			chip.instructionLoadSprite(instruction)
 			break
 		case 0x33:
+			// fmt.Printf("chip.instructionLoadBCD(0x%04x)\n", instruction)
 			chip.instructionLoadBCD(instruction)
 			break
 		case 0x55:
+			// fmt.Printf("chip.instructionLoadMulti(0x%04x)\n", instruction)
 			chip.instructionLoadMulti(instruction)
 			break
 		case 0x65:
+			// fmt.Printf("chip.instructionReadMulti(0x%04x)\n", instruction)
 			chip.instructionReadMulti(instruction)
 			break
 		default:
@@ -185,7 +219,7 @@ func (chip *CHIP8) instructionCallSubroutine(instruction uint16) {
 		return
 	}
 
-	chip.pushStack(chip.MAR)
+	chip.pushStack(chip.PC)
 	chip.PC = addr
 }
 
