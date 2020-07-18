@@ -42,6 +42,9 @@ func TestReset(t *testing.T) {
 	}
 
 	for i := range chip.Memory {
+		if i < 0x50 {
+			continue // skip sprite data section 0x00 - 0x4f
+		}
 		if chip.Memory[i] != 0 {
 			t.Errorf("chip.Memory[0x%x] = 0x%x; want 0x0", i, chip.Memory[i])
 		}

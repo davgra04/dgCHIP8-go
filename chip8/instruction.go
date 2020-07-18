@@ -142,6 +142,7 @@ func (chip *CHIP8) decodeAndExecuteInstruction(instruction uint16) {
 			chip.instructionReadMulti(instruction)
 			break
 		default:
+			fmt.Printf("Invalid instruction 0x%x\n", instruction)
 			break
 		}
 		break
@@ -393,12 +394,31 @@ func (chip *CHIP8) instructionDrawSprite(instruction uint16) {
 	x := uint16(chip.Reg[regXIdx])
 	y := uint16(chip.Reg[regYIdx])
 	bytes := uint8(instruction & 0xf)
-	collision := false
 
-	// chip.Paused = true
+	if chip.Cfg.DrawWrap {
+		chip.drawSpriteWrap(x, y, bytes)
+	} else {
+		chip.drawSpriteNoWrap(x, y, bytes)
+	}
+
+}
+
+func (chip *CHIP8) drawSpriteNoWrap(x, y uint16, bytes uint8) {
+	collision := false
 
 	for i := uint16(0); i < uint16(bytes); i++ {
 
+		// skip drawing bytes past the bottom of the screen
+		if y+i >= uint16(chip.Cfg.ResolutionY) {
+			continue
+		}
+
+		// skip drawing bytes past the right of the screen
+		if x >= uint16(chip.Cfg.ResolutionX) {
+			continue
+		}
+
+		// prepare shortToDraw, get current display address and contents
 		spriteByte := chip.ReadByte(chip.RegI + i)
 		shortToDraw := uint16(spriteByte) << 8
 		shortToDraw = shortToDraw >> (x % 8)
@@ -406,11 +426,24 @@ func (chip *CHIP8) instructionDrawSprite(instruction uint16) {
 		curDisplayAddr := ((y+i)*uint16(chip.Cfg.ResolutionX) + x) / 8
 		curDisplayShort := chip.ReadDisplayShort(curDisplayAddr)
 
-		if shortToDraw&curDisplayShort != 0 {
-			collision = true
+		if x >= uint16(chip.Cfg.ResolutionX-8) {
+			// only draw 1st byte if 2nd byte is off screen
+			byteToDraw := uint8((shortToDraw >> 8) & 0xff)
+			curDisplayByte := chip.ReadDisplayByte(curDisplayAddr)
+
+			if byteToDraw&curDisplayByte != 0 {
+				collision = true
+			}
+			chip.WriteDisplayByte(curDisplayAddr, byteToDraw^curDisplayByte)
+
+		} else {
+			// draw full short
+			if shortToDraw&curDisplayShort != 0 {
+				collision = true
+			}
+			chip.WriteDisplayShort(curDisplayAddr, shortToDraw^curDisplayShort)
 		}
 
-		chip.WriteDisplayShort(curDisplayAddr, shortToDraw^curDisplayShort)
 	}
 
 	if collision {
@@ -418,7 +451,71 @@ func (chip *CHIP8) instructionDrawSprite(instruction uint16) {
 	} else {
 		chip.Reg[0xf] = 0x0
 	}
+}
 
+func (chip *CHIP8) drawSpriteWrap(x, y uint16, bytes uint8) {
+	collision := false
+
+	var xAdjusted, yAdjusted uint16
+
+	for i := uint16(0); i < uint16(bytes); i++ {
+
+		yAdjusted = y
+		xAdjusted = x
+
+		// adjust y value for bytes past the bottom of the screen
+		for yAdjusted+i >= uint16(chip.Cfg.ResolutionY) {
+			yAdjusted -= uint16(chip.Cfg.ResolutionY)
+		}
+
+		// adjust x value for bytes past the right of the screen
+		for xAdjusted >= uint16(chip.Cfg.ResolutionX) {
+			xAdjusted -= uint16(chip.Cfg.ResolutionX)
+		}
+
+		// prepare shortToDraw, get current display address and contents
+		spriteByte := chip.ReadByte(chip.RegI + i)
+		shortToDraw := uint16(spriteByte) << 8
+		shortToDraw = shortToDraw >> (xAdjusted % 8)
+
+		curDisplayAddr := ((yAdjusted+i)*uint16(chip.Cfg.ResolutionX) + xAdjusted) / 8
+		curDisplayShort := chip.ReadDisplayShort(curDisplayAddr)
+
+		if xAdjusted >= uint16(chip.Cfg.ResolutionX-8) {
+			// need to wrap 2nd byte
+
+			byteToDraw1 := uint8((shortToDraw >> 8) & 0xff)
+			byteToDraw2 := uint8(shortToDraw & 0xff)
+
+			curDisplayAddr1 := curDisplayAddr
+			curDisplayAddr2 := curDisplayAddr + 1 - uint16(chip.Cfg.ResolutionX/8)
+
+			curDisplayByte1 := chip.ReadDisplayByte(curDisplayAddr1)
+			curDisplayByte2 := chip.ReadDisplayByte(curDisplayAddr2)
+
+			if (byteToDraw1&curDisplayByte1)|(byteToDraw2&curDisplayByte2) != 0 {
+				collision = true
+			}
+
+			chip.WriteDisplayByte(curDisplayAddr1, byteToDraw1^curDisplayByte1)
+			chip.WriteDisplayByte(curDisplayAddr2, byteToDraw2^curDisplayByte2)
+
+		} else {
+			// no need to wrap horizontally
+			if shortToDraw&curDisplayShort != 0 {
+				collision = true
+			}
+
+			chip.WriteDisplayShort(curDisplayAddr, shortToDraw^curDisplayShort)
+		}
+
+	}
+
+	if collision {
+		chip.Reg[0xf] = 0x1
+	} else {
+		chip.Reg[0xf] = 0x0
+	}
 }
 
 // Ex9E - SKP Vx
@@ -452,24 +549,31 @@ func (chip *CHIP8) instructionReadDelayTimer(instruction uint16) {
 // Wait for a key press, store the value of the key in Vx.
 func (chip *CHIP8) instructionWaitForKey(instruction uint16) {
 	regIdx := instruction >> 8 & 0xf
-	initialKeyState := chip.Keys
 
-	chip.PC = chip.MAR
+	if !chip.watchingKeys {
+		// start watching for keys, initialize KeysPrev
+		chip.watchingKeys = true
+		for i := range chip.Keys {
+			chip.KeysPrev[i] = chip.Keys[i]
+		}
+	}
 
 	for i := 0; i < len(chip.Keys); i++ {
-		curKeyState := chip.Keys[i]
-		if curKeyState != initialKeyState[i] {
-			if curKeyState {
-				// we got our key
+		if chip.Keys[i] != chip.KeysPrev[i] {
+			if chip.Keys[i] {
+				// we got our key, it is a keydown event
 				chip.Reg[regIdx] = uint8(i)
-				chip.PC += 2
-				break
-			} else {
-				initialKeyState[i] = false
+				chip.watchingKeys = false
+				return
 			}
 		}
 	}
 
+	// key not pressed, reset PC and update keyPrev
+	chip.PC = chip.MAR
+	for i := range chip.Keys {
+		chip.KeysPrev[i] = chip.Keys[i]
+	}
 }
 
 // Fx15 - LD DT, Vx
@@ -511,6 +615,8 @@ func (chip *CHIP8) instructionLoadSprite(instruction uint16) {
 func (chip *CHIP8) instructionLoadBCD(instruction uint16) {
 	regIdx := instruction >> 8 & 0xf
 
+	// fmt.Printf("Writing Reg%x to 0x%x, 0x%x, and 0x%x\n", regIdx, chip.RegI, chip.RegI+1, chip.RegI+2)
+
 	chip.Memory[chip.RegI] = (chip.Reg[regIdx] / 100) % 10
 	chip.Memory[chip.RegI+1] = (chip.Reg[regIdx] / 10) % 10
 	chip.Memory[chip.RegI+2] = chip.Reg[regIdx] % 10
@@ -521,7 +627,7 @@ func (chip *CHIP8) instructionLoadBCD(instruction uint16) {
 func (chip *CHIP8) instructionLoadMulti(instruction uint16) {
 	regIdx := instruction >> 8 & 0xf
 
-	for i := uint16(0); i < regIdx; i++ {
+	for i := uint16(0); i <= regIdx; i++ {
 		chip.Memory[chip.RegI+i] = chip.Reg[i]
 	}
 }
@@ -531,7 +637,7 @@ func (chip *CHIP8) instructionLoadMulti(instruction uint16) {
 func (chip *CHIP8) instructionReadMulti(instruction uint16) {
 	regIdx := instruction >> 8 & 0xf
 
-	for i := uint16(0); i < regIdx; i++ {
+	for i := uint16(0); i <= regIdx; i++ {
 		chip.Reg[i] = chip.Memory[chip.RegI+i]
 	}
 }

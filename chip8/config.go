@@ -9,6 +9,7 @@ type Config struct {
 	NumRegisters             uint16  // num 16-bit registers
 	ClockFreq                float32 // Hz
 	TimerDecrementFreq       int     // Hz
+	DrawWrap                 bool    // determines if DRW instruction wraps across screen
 }
 
 // GetDefaultConfig returns the default CHIP8 configuration
@@ -22,5 +23,6 @@ func GetDefaultConfig() *Config {
 		NumRegisters:       16,
 		ClockFreq:          500,
 		TimerDecrementFreq: 60,
+		DrawWrap:           true,
 	}
 }

@@ -43,7 +43,7 @@ func main() {
 	////////////////////////////////////////
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "usage: %s [-h] [-start_paused] program_path\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s [-h] [-start_paused] [-wrap] program_path\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "positional arguments:\n")
 		fmt.Fprintf(os.Stderr, "  program_path\n")
 		fmt.Fprintf(os.Stderr, "        path of the program to load and execute:\n")
@@ -52,6 +52,7 @@ func main() {
 	}
 
 	startPaused := flag.Bool("start_paused", false, "if set, CHIP8 machine will start paused")
+	noWrap := flag.Bool("nowrap", false, "if set, CHIP8 sprite draws will not wrap around the screen")
 	flag.Parse()
 
 	if flag.NArg() < 1 {
@@ -59,14 +60,18 @@ func main() {
 	}
 
 	fmt.Printf("startPaused: %v [%T]\n", *startPaused, *startPaused)
+	fmt.Printf("noWrap: %v [%T]\n", *noWrap, *noWrap)
 	fmt.Printf("flag.Arg(0): %v [%T]\n", flag.Arg(0), flag.Arg(0))
 
 	// Initialize CHIP8 machine
 	////////////////////////////////////////
 
 	chipCfg := chip8.GetDefaultConfig()
+	chipCfg.DrawWrap = !*noWrap
+
 	// chipCfg.ClockFreq = 2000.0
 	// chipCfg.ClockFreq = 10.0
+
 	chip, done := chip8.NewCHIP8(chipCfg)
 	chip.Paused = *startPaused
 

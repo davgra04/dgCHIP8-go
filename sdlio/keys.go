@@ -60,9 +60,11 @@ func HandleKey(ctx *SDLAppContext, t *sdl.KeyboardEvent) {
 	if chipKey, ok := QWERTYToChip8Key[strings.ToUpper(string(t.Keysym.Sym))]; ok {
 		keyIdx, _ := strconv.ParseInt(chipKey, 16, 64)
 		if t.Type == sdl.KEYDOWN {
-			ctx.Chip8.Keys[keyIdx] = true
+			// ctx.Chip8.Keys[keyIdx] = true
+			ctx.Chip8.SetKeyState(uint8(keyIdx), true)
 		} else {
-			ctx.Chip8.Keys[keyIdx] = false
+			// ctx.Chip8.Keys[keyIdx] = false
+			ctx.Chip8.SetKeyState(uint8(keyIdx), false)
 		}
 	} else { // handle pause/step emulation
 		if t.Type == sdl.KEYDOWN {
