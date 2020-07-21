@@ -751,6 +751,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// then draw this
 	//     00000000
 	//     01111000
@@ -800,6 +804,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] == 0x0 {
+		t.Errorf("collision = 0x%x; want collision > 0x0", chip.Reg[0xf])
+	}
+
 	// test non-wrapped drawing at bottom edge
 	////////////////////////////////////////
 	chip.WriteByte(0x400, 0b11111111)
@@ -846,6 +854,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// test non-wrapped drawing at right edge
 	////////////////////////////////////////
 	chip.clearDisplay()
@@ -888,6 +900,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 	}
 
 	compareDisplay(t, chip, expected)
+
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
 
 	// test non-wrapped drawing at bottom right corner
 	////////////////////////////////////////
@@ -932,6 +948,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// test non-wrapped drawing offscreen
 	////////////////////////////////////////
 	chip.clearDisplay()
@@ -974,6 +994,10 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 	}
 
 	compareDisplay(t, chip, expected)
+
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
 }
 
 func TestInstructionDrawSpriteWrap(t *testing.T) {
@@ -1044,6 +1068,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// then draw this
 	//     00000000
 	//     01111000
@@ -1093,6 +1121,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] == 0x0 {
+		t.Errorf("collision = 0x%x; want collision > 0x0", chip.Reg[0xf])
+	}
+
 	// test wrapped drawing at bottom edge
 	////////////////////////////////////////
 	chip.WriteByte(0x400, 0b11111111)
@@ -1139,6 +1171,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// test wrapped drawing at right edge
 	////////////////////////////////////////
 	chip.clearDisplay()
@@ -1181,6 +1217,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 	}
 
 	compareDisplay(t, chip, expected)
+
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
 
 	// test wrapped drawing at bottom right corner
 	////////////////////////////////////////
@@ -1225,6 +1265,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 
 	compareDisplay(t, chip, expected)
 
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
+
 	// test wrapped drawing offscreen
 	////////////////////////////////////////
 	chip.clearDisplay()
@@ -1267,6 +1311,10 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 	}
 
 	compareDisplay(t, chip, expected)
+
+	if chip.Reg[0xf] != 0x0 {
+		t.Errorf("collision = 0x%x; want collision = 0x0", chip.Reg[0xf])
+	}
 
 }
 

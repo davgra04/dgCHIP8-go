@@ -374,12 +374,14 @@ func (chip *CHIP8) DrawBinaryCount() {
 
 // StepEmulation executes a single fetch-decode-execute cycle
 func (chip *CHIP8) StepEmulation() {
-	// decrement timers
-	if chip.RegDelay > 0 {
-		chip.RegDelay--
-	}
-	if chip.RegSound > 0 {
-		chip.RegSound--
+	// decrement timers at 60Hz
+	if chip.Cycle%60 == 0 {
+		if chip.RegDelay > 0 {
+			chip.RegDelay--
+		}
+		if chip.RegSound > 0 {
+			chip.RegSound--
+		}
 	}
 
 	// fetch and increment program counter

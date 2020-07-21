@@ -268,12 +268,6 @@ func (chip *CHIP8) instructionAddByte(instruction uint16) {
 	value := uint16(instruction & 0xff)
 	sum := uint16(chip.Reg[regIdx]) + value
 
-	if sum > 0xff {
-		chip.Reg[0xf] = 0x1
-	} else {
-		chip.Reg[0xf] = 0x0
-	}
-
 	chip.Reg[regIdx] = uint8(sum & 0xff)
 }
 
