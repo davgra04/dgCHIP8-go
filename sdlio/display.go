@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/davgra04/dgCHIP8-go/chip8"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -17,11 +18,12 @@ import (
 // SDLAppContext holds references to everything needed for the SDL version of the
 // emulator (configuration, window, chip8 machine, etc)
 type SDLAppContext struct {
-	WinCfg   *WindowConfig
-	Window   *sdl.Window
-	Renderer *sdl.Renderer
-	Font     *ttf.Font
-	Chip8    *chip8.CHIP8
+	WinCfg    *WindowConfig
+	Window    *sdl.Window
+	Renderer  *sdl.Renderer
+	Font      *ttf.Font
+	BeepChunk *mix.Chunk
+	Chip8     *chip8.CHIP8
 }
 
 ////////////////////////////////////////////////////////////////////////////////

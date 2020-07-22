@@ -8,7 +8,7 @@ type Config struct {
 	SizeDisplay              uint16  // bytes
 	NumRegisters             uint16  // num 16-bit registers
 	ClockFreq                float32 // Hz
-	TimerDecrementFreq       int     // Hz
+	TimerDecrementFreq       float32 // Hz
 	DrawWrap                 bool    // determines if DRW instruction wraps across screen
 }
 

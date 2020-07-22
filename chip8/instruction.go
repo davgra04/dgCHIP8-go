@@ -617,7 +617,7 @@ func (chip *CHIP8) instructionSetSoundTimer(instruction uint16) {
 	regIdx := instruction >> 8 & 0xf
 	if chip.Reg[regIdx] > 0 {
 		chip.RegSound = chip.Reg[regIdx]
-		// TODO: START BEEP
+		chip.sound <- true
 	}
 }
 

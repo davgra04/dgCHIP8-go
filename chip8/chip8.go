@@ -34,13 +34,15 @@ type CHIP8 struct {
 	// etc
 	Cycle  uint64      // number of cycles executed
 	Cfg    *Config     // CHIP8 configuration
-	done   <-chan bool // signals CHIP8 to stop execution
+	sound  chan<- bool // sending channel to signal beep to start/stop
+	done   <-chan bool // recieve channel to signal CHIP8 to stop execution
 	Paused bool        // if true, pauses execution
 }
 
 // NewCHIP8 creates new CHIP8 machine given configuration
-func NewCHIP8(cfg *Config) (*CHIP8, chan<- bool) {
+func NewCHIP8(cfg *Config) (*CHIP8, <-chan bool, chan<- bool) {
 	done := make(chan bool)
+	sound := make(chan bool)
 	chip := CHIP8{
 		Memory:       make([]uint8, cfg.SizeMemory),
 		PC:           programStartAddr,
@@ -57,13 +59,14 @@ func NewCHIP8(cfg *Config) (*CHIP8, chan<- bool) {
 		watchingKeys: false,
 		Cycle:        0,
 		Cfg:          cfg,
+		sound:        sound,
 		done:         done,
 		Paused:       false,
 	}
 
 	chip.reset()
 
-	return &chip, done
+	return &chip, sound, done
 }
 
 func (chip *CHIP8) writeSpriteData() {
@@ -372,17 +375,21 @@ func (chip *CHIP8) DrawBinaryCount() {
 // main execution loop
 ////////////////////////////////////////////////////////////////////////////////
 
-// StepEmulation executes a single fetch-decode-execute cycle
-func (chip *CHIP8) StepEmulation() {
-	// decrement timers at 60Hz
-	if chip.Cycle%60 == 0 {
-		if chip.RegDelay > 0 {
-			chip.RegDelay--
-		}
-		if chip.RegSound > 0 {
-			chip.RegSound--
+// DecrementTimers decrements delay and sound timers at 60 Hz
+func (chip *CHIP8) DecrementTimers() {
+	if chip.RegDelay > 0 {
+		chip.RegDelay--
+	}
+	if chip.RegSound > 0 {
+		chip.RegSound--
+		if chip.RegSound == 0 {
+			chip.sound <- false
 		}
 	}
+}
+
+// StepEmulation executes a single fetch-decode-execute cycle
+func (chip *CHIP8) StepEmulation() {
 
 	// fetch and increment program counter
 	chip.MAR = chip.PC
@@ -402,6 +409,11 @@ func (chip *CHIP8) Run() {
 	clockTicker := time.NewTicker(clockPeriod)
 	defer clockTicker.Stop()
 
+	timerPeriod := time.Nanosecond * time.Duration(1000000000.0/chip.Cfg.TimerDecrementFreq)
+	fmt.Printf("CHIP8 timerPeriod: %v\n", timerPeriod)
+	timerTicker := time.NewTicker(timerPeriod)
+	defer timerTicker.Stop()
+
 	running := true
 	// chip.RandomizeDisplay()
 
@@ -410,6 +422,8 @@ func (chip *CHIP8) Run() {
 		case <-chip.done:
 			running = false
 			break
+		case <-timerTicker.C:
+			chip.DecrementTimers()
 		case <-clockTicker.C:
 			if !chip.Paused {
 				chip.StepEmulation()

@@ -11,6 +11,7 @@ import (
 
 	"github.com/davgra04/dgCHIP8-go/chip8"
 	"github.com/davgra04/dgCHIP8-go/sdlio"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -23,12 +24,6 @@ func init() {
 }
 
 func readProgram(path string) []byte {
-	// file, err := os.Open(path)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer file.Close()
-
 	program, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
@@ -72,7 +67,7 @@ func main() {
 	// chipCfg.ClockFreq = 2000.0
 	// chipCfg.ClockFreq = 10.0
 
-	chip, done := chip8.NewCHIP8(chipCfg)
+	chip, sound, done := chip8.NewCHIP8(chipCfg)
 	chip.Paused = *startPaused
 
 	// read program and load into CHIP8 memory
@@ -103,6 +98,19 @@ func main() {
 	}
 	defer font.Close()
 
+	// initialize sound mixer
+	if err := mix.OpenAudio(44100, mix.DEFAULT_FORMAT, 2, 1024); err != nil {
+		panic(err)
+	}
+	defer mix.CloseAudio()
+
+	// load beep sound
+	beepChunk, err := sdlio.LoadBeep()
+	if err != nil {
+		panic(err)
+	}
+	defer beepChunk.Free()
+
 	// create window
 	window, err := sdl.CreateWindow("dgchip8", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
 		windowCfg.Width, windowCfg.Height, sdl.WINDOW_SHOWN)
@@ -120,11 +128,12 @@ func main() {
 
 	// wrap everything in SDLAppContext
 	ctx := sdlio.SDLAppContext{
-		WinCfg:   windowCfg,
-		Window:   window,
-		Renderer: renderer,
-		Chip8:    chip,
-		Font:     font,
+		WinCfg:    windowCfg,
+		Window:    window,
+		Renderer:  renderer,
+		Chip8:     chip,
+		BeepChunk: beepChunk,
+		Font:      font,
 	}
 
 	// prepare display refresh timer
@@ -156,6 +165,14 @@ func main() {
 				// default:
 				// 	fmt.Printf("event %s\n", event)
 			}
+		}
+
+		// handle beep event
+		select {
+		case beep := <-sound:
+			fmt.Printf("Got beep event: %v\n", beep)
+			sdlio.HandleBeepEvent(&ctx, beep)
+		default:
 		}
 
 		// draw window
