@@ -73,7 +73,7 @@ func compareDisplay(t *testing.T, chip *CHIP8, expected [32]uint64) {
 // Clear the display.
 func TestInstructionClearScreen(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	for i := range chip.Display {
 		chip.Display[i] = 0xba
@@ -97,7 +97,7 @@ func TestInstructionClearScreen(t *testing.T) {
 // Return from a subroutine.
 func TestInstructionCallReturnSubroutine(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(0x200, 0x2abc)
 	chip.WriteShort(0x202, 0x2abc)
@@ -135,7 +135,7 @@ func TestInstructionCallReturnSubroutine(t *testing.T) {
 // Jump to location nnn.
 func TestInstructionJump(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(0x200, 0x1abc)
 	chip.WriteShort(0xabc, 0x1def)
@@ -160,7 +160,7 @@ func TestInstructionJump(t *testing.T) {
 // Skip next instruction if Vx = kk.
 func TestInstructionSkipEqualByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 	chip.Reg[0xa] = 0xdc
@@ -189,7 +189,7 @@ func TestInstructionSkipEqualByte(t *testing.T) {
 // Skip next instruction if Vx != kk.
 func TestInstructionSkipNotEqualByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 	chip.Reg[0xa] = 0xdc
@@ -218,7 +218,7 @@ func TestInstructionSkipNotEqualByte(t *testing.T) {
 // Skip next instruction if Vx = Vy.
 func TestInstructionSkipEqualReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 	chip.Reg[0xa] = 0xdc
@@ -248,7 +248,7 @@ func TestInstructionSkipEqualReg(t *testing.T) {
 // Set Vx = kk.
 func TestInstructionLoadByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(0x200, 0x6a44)
 
@@ -263,7 +263,7 @@ func TestInstructionLoadByte(t *testing.T) {
 // Set Vx = Vx + kk.
 func TestInstructionAddByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0x10
 	chip.Reg[0x1] = 0xff
@@ -297,7 +297,7 @@ func TestInstructionAddByte(t *testing.T) {
 // Set Vx = Vy.
 func TestInstructionLoadReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xff
 
@@ -314,7 +314,7 @@ func TestInstructionLoadReg(t *testing.T) {
 // Set Vx = Vx OR Vy.
 func TestInstructionOr(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xaa
 	chip.Reg[0x1] = 0x55
@@ -348,7 +348,7 @@ func TestInstructionOr(t *testing.T) {
 // Set Vx = Vx AND Vy.
 func TestInstructionAnd(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xaa
 	chip.Reg[0x1] = 0x55
@@ -384,7 +384,7 @@ func TestInstructionAnd(t *testing.T) {
 // Set Vx = Vx XOR Vy.
 func TestInstructionXor(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0x3c // 0011 1100
 	chip.Reg[0x1] = 0x0f // 0000 1111
@@ -416,7 +416,7 @@ func TestInstructionXor(t *testing.T) {
 // Set Vx = Vx + Vy, set VF = carry.
 func TestInstructionAddReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0x00
 	chip.Reg[0x1] = 0x01
@@ -457,7 +457,7 @@ func TestInstructionAddReg(t *testing.T) {
 // Set Vx = Vx - Vy, set VF = NOT borrow.
 func TestInstructionSubReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xff
 	chip.Reg[0x1] = 0x0f
@@ -498,7 +498,7 @@ func TestInstructionSubReg(t *testing.T) {
 // Set Vx = Vx SHR 1.
 func TestInstructionShiftRight(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xf0
 	chip.Reg[0x1] = 0x0f
@@ -537,7 +537,7 @@ func TestInstructionShiftRight(t *testing.T) {
 // Set Vx = Vy - Vx, set VF = NOT borrow.
 func TestInstructionSubNReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0x0f
 	chip.Reg[0x1] = 0xff
@@ -578,7 +578,7 @@ func TestInstructionSubNReg(t *testing.T) {
 // Set Vx = Vx SHL 1.
 func TestInstructionShiftLeft(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xf0
 	chip.Reg[0x1] = 0x0f
@@ -617,7 +617,7 @@ func TestInstructionShiftLeft(t *testing.T) {
 // Skip next instruction if Vx != Vy.
 func TestInstructionSkipNotEqualReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 	chip.Reg[0x2] = 0xdc
@@ -647,7 +647,7 @@ func TestInstructionSkipNotEqualReg(t *testing.T) {
 // Set I = nnn.
 func TestInstructionLoadRegI(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(0x200, 0xabcd)
 
@@ -662,7 +662,7 @@ func TestInstructionLoadRegI(t *testing.T) {
 // Jump to location nnn + V0.
 func TestInstructionJumpReg(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0xff
 
@@ -685,7 +685,7 @@ func TestInstructionJumpReg(t *testing.T) {
 // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
 func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Cfg.DrawWrap = false // disable wrapping
 
@@ -1002,7 +1002,7 @@ func TestInstructionDrawSpriteNoWrap(t *testing.T) {
 
 func TestInstructionDrawSpriteWrap(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Cfg.DrawWrap = true // enable wrapping
 
@@ -1322,7 +1322,7 @@ func TestInstructionDrawSpriteWrap(t *testing.T) {
 // Skip next instruction if key with the value of Vx is pressed.
 func TestInstructionSkipKey(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xa
 	chip.Reg[0x2] = 0xb
@@ -1353,7 +1353,7 @@ func TestInstructionSkipKey(t *testing.T) {
 // Skip next instruction if key with the value of Vx is not pressed.
 func TestInstructionSkipNotKey(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xa
 	chip.Reg[0x2] = 0xb
@@ -1384,15 +1384,15 @@ func TestInstructionSkipNotKey(t *testing.T) {
 // Set Vx = delay timer value.
 func TestInstructionReadDelayTimer(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.RegDelay = 0xba
 	chip.WriteShort(0x200, 0xf107)
 
 	chip.StepEmulation()
 
-	if chip.Reg[0x1] != 0xb9 {
-		t.Errorf("chip.Reg[0x1] = 0x%x; want 0xb9", chip.Reg[0x1])
+	if chip.Reg[0x1] != 0xba {
+		t.Errorf("chip.Reg[0x1] = 0x%x; want 0xba", chip.Reg[0x1])
 	}
 }
 
@@ -1400,7 +1400,7 @@ func TestInstructionReadDelayTimer(t *testing.T) {
 // Wait for a key press, store the value of the key in Vx.
 func TestInstructionWaitForKey(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Keys[0xb] = true // b key is pressed before WaitForKey instruction is executed
 
@@ -1454,7 +1454,7 @@ func TestInstructionWaitForKey(t *testing.T) {
 // Set delay timer = Vx.
 func TestInstructionSetDelayTimer(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 
@@ -1471,7 +1471,7 @@ func TestInstructionSetDelayTimer(t *testing.T) {
 // Set sound timer = Vx.
 func TestInstructionSetSoundTimer(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0xba
 
@@ -1488,7 +1488,7 @@ func TestInstructionSetSoundTimer(t *testing.T) {
 // Set I = I + Vx.
 func TestInstructionAddRegI(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x1] = 0x11
 	chip.RegI = 0x2222
@@ -1506,7 +1506,7 @@ func TestInstructionAddRegI(t *testing.T) {
 // Set I = location of sprite for digit Vx.
 func TestInstructionLoadSprite(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(0x200, 0xfa29)
 	chip.WriteShort(0x202, 0xfa29)
@@ -1570,7 +1570,7 @@ func TestInstructionLoadSprite(t *testing.T) {
 // Store BCD representation of Vx in memory locations I, I+1, and I+2.
 func TestInstructionLoadBCD(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Reg[0x0] = 0
 	chip.Reg[0x1] = 4
@@ -1631,7 +1631,7 @@ func TestInstructionLoadBCD(t *testing.T) {
 // Store registers V0 through Vx in memory starting at location I.
 func TestInstructionLoadMulti(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	// initialize registers to 0xf0 - 0xff
 	for i := 0; i < 16; i++ {
@@ -1707,7 +1707,7 @@ func TestInstructionLoadMulti(t *testing.T) {
 // Read registers V0 through Vx from memory starting at location I.
 func TestInstructionReadMulti(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	// initialize memory block to 0xf0 - 0xff and registers to 0xba
 	for i := 0; i < 16; i++ {

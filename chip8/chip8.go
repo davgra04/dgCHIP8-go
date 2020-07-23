@@ -42,7 +42,7 @@ type CHIP8 struct {
 // NewCHIP8 creates new CHIP8 machine given configuration
 func NewCHIP8(cfg *Config) (*CHIP8, <-chan bool, chan<- bool) {
 	done := make(chan bool)
-	sound := make(chan bool)
+	sound := make(chan bool, 50)
 	chip := CHIP8{
 		Memory:       make([]uint8, cfg.SizeMemory),
 		PC:           programStartAddr,
@@ -390,7 +390,6 @@ func (chip *CHIP8) DecrementTimers() {
 
 // StepEmulation executes a single fetch-decode-execute cycle
 func (chip *CHIP8) StepEmulation() {
-
 	// fetch and increment program counter
 	chip.MAR = chip.PC
 	chip.PC += 2
