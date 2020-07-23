@@ -10,7 +10,7 @@ import (
 
 func TestReset(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.PC = 42
 	chip.Cycle = 42
@@ -91,7 +91,7 @@ func TestReset(t *testing.T) {
 
 func TestReadByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Memory[42] = 0xba
 
@@ -108,7 +108,7 @@ func TestReadByte(t *testing.T) {
 
 func TestReadShort(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Memory[42] = 0xab
 	chip.Memory[43] = 0xcd
@@ -132,7 +132,7 @@ func TestReadShort(t *testing.T) {
 
 func TestWriteByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteByte(42, 0xba)
 
@@ -144,7 +144,7 @@ func TestWriteByte(t *testing.T) {
 
 func TestWriteShort(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteShort(42, 0xabcd)
 
@@ -165,7 +165,7 @@ func TestWriteShort(t *testing.T) {
 
 func TestDisplayReadByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Display[42] = 0xba
 
@@ -182,7 +182,7 @@ func TestDisplayReadByte(t *testing.T) {
 
 func TestReadDisplayShort(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.Display[42] = 0xab
 	chip.Display[43] = 0xcd
@@ -206,7 +206,7 @@ func TestReadDisplayShort(t *testing.T) {
 
 func TestDisplayWriteByte(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteDisplayByte(42, 0xba)
 
@@ -218,7 +218,7 @@ func TestDisplayWriteByte(t *testing.T) {
 
 func TestDisplayWriteShort(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.WriteDisplayShort(42, 0xabcd)
 
@@ -239,7 +239,7 @@ func TestDisplayWriteShort(t *testing.T) {
 
 func TestPushStack(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.StackPtr = chipCfg.SizeStack - 1
 	chip.pushStack(0xba)
@@ -262,7 +262,7 @@ func TestPushStack(t *testing.T) {
 
 func TestPopStack(t *testing.T) {
 	chipCfg := GetDefaultConfig()
-	chip, _ := NewCHIP8(chipCfg)
+	chip, _, _ := NewCHIP8(chipCfg)
 
 	chip.StackPtr = 1
 	chip.Stack[0] = 0xba
